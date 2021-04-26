@@ -1,4 +1,5 @@
-#include <iostream>
+#include <limits>
+#include <gazebo_msgs/ModelStates.h>
 
 /*
  * z_i is sensor reading
@@ -34,14 +35,21 @@
  * We are returning P_i
  */
 
-class KalmanFilter{
-    public:
+bool kalmanFilter(
+        assignment1::pidAlgorithm::Request &req,
+        assignment1::pidAlgorithm::Response &res){
+        double K_i = req.P_i_estimate / (res.P_i_estimate + req.R_i);
+        res.y_i = y_i_estimate + K_i*(req.z_i - req.y_i_estimate);
+        req.P_i_estimate = (1 - K_i) * req.P_i_estimate;
+        return true;
+}
 
-    private:
+int main(int argc, char **argv){
+    ros::init(argc, argv, "assignment1/kalman_filter");
+    ros::NodeHandle nodeHandle;
 
-};
+    ros::ServiceServer getFilteredOutput = 
+        nodeHandle.advertiseService("getFilteredOutput", KalmanFilter);
 
-int main(){
-    std::cout << "Hello world!" << std::endl;
     return EXIT_SUCCESS;
 }
