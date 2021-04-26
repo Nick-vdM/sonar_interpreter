@@ -107,6 +107,7 @@ int main(int argc, char **argv){
     pidAlgorithmSrv.request.lastError = 0;
     pidAlgorithmSrv.request.totalFValue = 0;
     pidAlgorithmSrv.request.T = 1000/100; // ms in a second / loop rate
+    bool firstPid = true; 
 
     while(ros::ok()){
         ros::spinOnce();
@@ -163,8 +164,9 @@ int main(int argc, char **argv){
                 }
                 lastPose = ModelStateSrv.response.pose;
                 kalmanFilterSrv.request.y_i_estimate = euclideanDistance(lastPose, ModelStateSrv.response.pose);
-                // y_i_estimate and P_i_estimate should already be handled
-                // by previous loops
+                // Also make P_i_estimate = P_i
+                kalmanFilterSrv.request.P_i_estimate = 
+                    kalmanFilterSrv.response.P_i;
             }
 
             kalmanFilterSrv.request.z_i = sonarReadingSrv.response.readings.distance1;
@@ -185,6 +187,10 @@ int main(int argc, char **argv){
                 continue;
             }
             movement.linear.x = pidAlgorithmSrv.response.y;
+            pidAlgorithmSrv.request.lastError = 
+                pidAlgorithm.request.error;
+            pidAlgorithmSrv.request.totalFValue = 
+                pidAlgorithm.response.totalFValue;
         }
 
         driver.publish(movement);

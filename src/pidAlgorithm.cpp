@@ -27,8 +27,8 @@ bool pidAlgorithm(
         assignment1::pid_algorithm::Request & req,
         assignment1::pid_algorithm::Response &res){
     double P = req.K_p * req.error;
-    req.totalFValue = req.error * req.T + req.totalFValue;
-    double I = req.K_i * req.totalFValue;
+    res.totalFValue = req.error * req.T + req.totalFValue;
+    double I = req.K_i * res.totalFValue;
     // split D into top and bottom so its more readable
     double && topD = req.error - req.lastError;
     double D = req.K_d * (topD / req.T);
@@ -38,11 +38,8 @@ bool pidAlgorithm(
     res.y = std::min(res.y, 0.22);
     res.y = std::max(res.y, 0.0);
 
-    // just update last error to be the current error
-    req.lastError = req.error;
-
     ROS_INFO("lastError: %u totalFValue %lf", 
-            (unsigned int) req.lastError, req.totalFValue);
+            (unsigned int) res.lastError, res.totalFValue);
     ROS_INFO("K_p: %lf K_i %lf K_d %lf", req.K_p, req.K_i, req.K_d);
     ROS_INFO("P: %lf, I:, %lf, D: %lf", P,I, D);
     ROS_INFO("Returning y as %lf", res.y);

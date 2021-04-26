@@ -7,3 +7,5 @@ float64 K_d
 float64 T
 ---
 float64 y
+uint16 lastError
+float64 totalFValue
