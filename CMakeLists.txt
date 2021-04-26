@@ -24,10 +24,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  getSonarReadings.srv
-  pidAlgorithm.srv
-  kalmanFilter.srv
-  kalmanEstimateVariance.srv
+  kalman_filter.srv
+  pid_algorithm.srv
+  sonar_wrapper.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -65,3 +64,8 @@ add_dependencies(assignment1_pidAlgorithm.cpp assignment1_generate_messages_cpp)
 add_executable(assignment1_sonarWrapper src/sonarWrapper.cpp)
 target_link_libraries(assignment1_sonarWrapper ${catkin_LIBRARIES})
 add_dependencies(assignment1_sonarWrapper assignment1_generate_messages_cpp)
+
+add_executable(assignment1_kalman_controller src/controller.cpp)
+target_compile_definitions(assignment1_kalman_controller PUBLIC -DNOISY_SONAR)
+target_link_libraries(assignment1_kalman_controller ${catkin_LIBRARIES})
+add_dependencies(assignment1_kalman_controller assignment1_generate_messages_cpp)

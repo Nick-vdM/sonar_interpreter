@@ -1,5 +1,7 @@
 #include <limits>
 #include <gazebo_msgs/ModelStates.h>
+#include "ros/ros.h"
+#include "assignment1/kalman_filter.h"
 
 /*
  * z_i is sensor reading
@@ -36,20 +38,28 @@
  */
 
 bool kalmanFilter(
-        assignment1::pidAlgorithm::Request &req,
-        assignment1::pidAlgorithm::Response &res){
-        double K_i = req.P_i_estimate / (res.P_i_estimate + req.R_i);
-        res.y_i = y_i_estimate + K_i*(req.z_i - req.y_i_estimate);
+        assignment1::kalman_filter::Request &req,
+        assignment1::kalman_filter::Response &res){
+        double K_i = req.P_i_estimate / (req.P_i_estimate + req.R_i);
+        res.y_i = req.y_i_estimate + K_i*(req.z_i - req.y_i_estimate);
+        ROS_INFO("P_i_estimate (before) %lf", req.P_i_estimate);
         req.P_i_estimate = (1 - K_i) * req.P_i_estimate;
+        ROS_INFO("K_i %lf R_I %lf z_i %u y_i_estimate %lf P_i_estimate(after) %lf",
+                K_i, req.R_i, (unsigned int)req.z_i, req.y_i_estimate, req.P_i_estimate);
+        
+        ROS_INFO("Returning y_i as %lf", res.y_i);
         return true;
 }
 
 int main(int argc, char **argv){
-    ros::init(argc, argv, "assignment1/kalman_filter");
+    ros::init(argc, argv, "kalman_filter_node");
     ros::NodeHandle nodeHandle;
 
-    ros::ServiceServer getFilteredOutput = 
-        nodeHandle.advertiseService("getFilteredOutput", KalmanFilter);
+    ros::ServiceServer findFilteredOutput = 
+        nodeHandle.advertiseService("kalman_filter", kalmanFilter);
+
+    ROS_INFO("Ready to manage requests");
+    ros::spin();
 
     return EXIT_SUCCESS;
 }

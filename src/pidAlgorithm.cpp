@@ -4,7 +4,7 @@
  */
 #include "ros/ros.h"
 #include "assignment1_setup/Sonars.h"
-#include "assignment1/pidAlgorithm.h"
+#include "assignment1/pid_algorithm.h"
 #include "geometry_msgs/Twist.h"
 #include <cmath>
 #include <algorithm>
@@ -24,8 +24,8 @@
 * T = latency
 */
 bool pidAlgorithm(
-        assignment1::pidAlgorithm::Request &req,
-        assignment1::pidAlgorithm::Response &res){
+        assignment1::pid_algorithm::Request & req,
+        assignment1::pid_algorithm::Response &res){
     double P = req.K_p * req.error;
     req.totalFValue = req.error * req.T + req.totalFValue;
     double I = req.K_i * req.totalFValue;
@@ -33,24 +33,31 @@ bool pidAlgorithm(
     double && topD = req.error - req.lastError;
     double D = req.K_d * (topD / req.T);
 
-    res.velocity = P + I + D;
+    res.y = P + I + D;
     // checking the documentation 22.0 is the maximum speed
-    res.velocity = std::max(res.velocity, 0.22);
-    res.velocity = std::min(res.velocity, 0.0);
+    res.y = std::min(res.y, 0.22);
+    res.y = std::max(res.y, 0.0);
 
     // just update last error to be the current error
-    res.lastError = res.error;
+    req.lastError = req.error;
+
+    ROS_INFO("lastError: %u totalFValue %lf", 
+            (unsigned int) req.lastError, req.totalFValue);
+    ROS_INFO("K_p: %lf K_i %lf K_d %lf", req.K_p, req.K_i, req.K_d);
+    ROS_INFO("P: %lf, I:, %lf, D: %lf", P,I, D);
+    ROS_INFO("Returning y as %lf", res.y);
     return true;
 }
 
 int main(int argc, char **argv){
-    ros::init(argc, argv, "assignment1/pid_algorithm");
+    ros::init(argc, argv, "pid_algorithm_node");
     ros::NodeHandle nodeHandle;
 
-    PIDCalculator pid{};
-
     ros::ServiceServer getSonarReadings =
-        nodeHandle.advertiseService("pidAlgorithm", pidAlgorithm);
+        nodeHandle.advertiseService("pid_algorithm", pidAlgorithm);
+
+    ROS_INFO("Ready to manage requests");
+    ros::spin();
 
     return EXIT_SUCCESS;
 }
