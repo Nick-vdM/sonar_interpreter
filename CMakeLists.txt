@@ -5,6 +5,7 @@ project(assignment1)
 # add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+  assignment1_setup
   gazebo_msgs
   geometry_msgs
   message_generation
@@ -24,6 +25,9 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   getSonarReadings.srv
+  pidAlgorithm.srv
+  kalmanFilter.srv
+  kalmanEstimateVariance.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
