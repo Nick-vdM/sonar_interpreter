@@ -66,9 +66,9 @@ double calculateVariance(std::vector <uint16_t> &sonarReadings) {
 
 void definePIDSrvInitialValues(assignment1::pid_algorithm &pidAlgorithmSrv) {
     // Extracted method to help with main readability
-    pidAlgorithmSrv.request.K_p = 1;
-    pidAlgorithmSrv.request.K_i = 1;
-    pidAlgorithmSrv.request.K_d = 1;
+    pidAlgorithmSrv.request.K_p = 0.22/100;
+    pidAlgorithmSrv.request.K_i = 0;
+    pidAlgorithmSrv.request.K_d = 0;
     pidAlgorithmSrv.request.lastError = 0;
     pidAlgorithmSrv.request.totalFValue = 0;
     pidAlgorithmSrv.request.T = 1000 / 100; // ms in a second / loop rate
