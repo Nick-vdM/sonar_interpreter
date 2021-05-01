@@ -5,6 +5,5 @@
 \BOOKMARK [1][-]{section.5}{Controller Node}{}% 5
 \BOOKMARK [2][-]{subsection.5.1}{PID constants}{section.5}% 6
 \BOOKMARK [2][-]{subsection.5.2}{Calculating Variance}{section.5}% 7
-\BOOKMARK [2][-]{subsection.5.3}{Adjustment on Kalman}{section.5}% 8
-\BOOKMARK [2][-]{subsection.5.4}{Structure}{section.5}% 9
-\BOOKMARK [2][-]{subsection.5.5}{Implementation}{section.5}% 10
+\BOOKMARK [2][-]{subsection.5.3}{Structure}{section.5}% 8
+\BOOKMARK [2][-]{subsection.5.4}{Implementation}{section.5}% 9

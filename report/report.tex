@@ -287,25 +287,84 @@ positive, move negative, derivative is negative, move positive... etc). As we do
 not want either of these, the derivative term can be set to 0 as well.
 \\
 \tab To tie it together, the derivative and integral are in direct conflict to
-the goal of getting there as fast as possible safely and the only thing
-remaining is the proportional term. Ideally the robot simply runs at maximum
-speed until a certain point, and then it slows down to approach the bowl.
-\subsection{Calculating Variance}
-
-\subsection{Adjustment on Kalman}
-
-
-\subsection{Structure}
-A core thing that makes implementing this bug free is that extracting functions
-from main in ROS is often prohibited due to a couple of methods only being
-permitted to be called inside main. So for easier understanding, figure 
-\begin{figure}
+the goal of getting there as fast as possible safely, and the only thing
+remaining is the proportional term. Ideally, the robot simply runs at maximum
+speed until a certain point which it starts slowing down to approach the bowl.
+To decide on this point the robot was place reasonably close to the bowl and the
+distance was measured as in figure \ref{100units}.
+\begin{figure}[ht]
     \centering
-    % \includegraphics{}
-    \caption{Psuedo code for the controller}
-    \label{controllerpsuedo}
+    \includegraphics[scale=0.75]{img/100_units_away.png}
+    \caption{How far the robot looks when it's 100 units away}
+    \label{100units}
 \end{figure}
+\\
+\tab To work out our $K_p$ from this we just have to find what the speed should be
+when its at 100 units by doing $y(t)=K_pe(t) => 0.22 = K_p100 => K_p =
+0.22/100$. We can just set $K_p$ to this.
+\subsection{Calculating Variance}
+To do this is not any different from usual:
+\begin{equation}
+    \begin{split}
+        mean & = \frac{1}{n} \sum_{i=0}^n{x_i} \\
+        variance & = \frac{\sum_{i=0}^n{(x_i - mean)^2}}{n-1}
+    \end{split}
+\end{equation}
+where $x_i$ is a collected sample and n is the number of samples
+\cite{variance}. Note that the sample formula is used instead of the population
+formula. With regards to the number of samples collected, it was decided that
+1000 will be used. Realistically, this is hard to justify without other
+variables involved but at 1000 points it is expected to give ten points for
+every percentile which should be reasonable.  
+\\ \tab One option is to hard-code in the variance because in the $sonars.cc$ 
+source code provided $std::normal\_distribution()$ is used and the standard
+deviation is defined as $100$. Meaning, the variance is hard-coded to $100^2 =
+10,000$. However, hard-coding in the answer would destroy an intended part of
+the assignment and reduce reusability in the case that the sonar reader's
+distribution changes. Furthermore, this can be used as justification for why the
+variance is calculated every run: to improve reusability.
+\subsection{Structure}
+A core factor that makes implementing this difficult is that extracting functions
+from main in ROS is often prohibited due to a couple of methods only being
+permitted to be called inside main. So for easier understanding, figure
+\ref{controllerPseudo} was made to grasp the implementation better.
+\begin{figure}[ht]
+    \begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[scale=0.25]{img/pseudocode_1.png}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[scale=0.33]{img/pseudocode_2.png}
+    \end{subfigure}
+\end{figure}
+\newpage
 \subsection{Implementation}
+Following the pseudocode, the controller was implemented as visible in figure
+\ref{controllerPseudo}. Note that the turn rate was set at ten degrees.
+\begin{figure}[ht]
+    \begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[scale=0.24]{img/controller1.png}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[scale=0.24]{img/controller2.png}
+    \end{subfigure}
+\end{figure}
+\begin{figure}[ht]
+    \begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[scale=0.24]{img/controller3.png}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \centering
+        \includegraphics[scale=0.24]{img/controller4.png}
+    \end{subfigure}
+    \caption{Implementation of the controller.}
+    \label{controllerPseudo}
+\end{figure}
+\newpage
 
 \bibliographystyle{apalike}
 \bibliography{biblio}

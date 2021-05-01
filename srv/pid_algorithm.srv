@@ -1,5 +1,5 @@
-uint16 error
-uint16 lastError
+float64 error
+float64 lastError
 float64 totalFValue
 float64 K_p
 float64 K_i
@@ -7,5 +7,5 @@ float64 K_d
 float64 T
 ---
 float64 y
-uint16 lastError
+float64 lastError
 float64 totalFValue

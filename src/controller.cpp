@@ -39,7 +39,7 @@ void defineTurn(geometry_msgs::Twist &defineTurnOf,
         // It must be torwards distance 2 so we need to turn positive
         defineTurnOf.angular.z = TURNRATE;
     } else {
-        // It must be towards distance 0 so we need to turn negative
+        // It must be towards distanCe 0 so we need to turn negative
         defineTurnOf.angular.z = TURNRATE * -1;
     }
 }
@@ -48,8 +48,7 @@ double calculateVariance(std::vector <uint16_t> &sonarReadings) {
     ROS_INFO("Number of values collected %zu", sonarReadings.size());
     double mean{0.0};
     for (auto &v : sonarReadings) {
-        ROS_INFO("%"
-        PRIu16, v);
+        ROS_INFO("%" PRIu16, v);
         mean += v;
     }
     mean /= sonarReadings.size();
@@ -59,16 +58,16 @@ double calculateVariance(std::vector <uint16_t> &sonarReadings) {
     for (auto &v : sonarReadings) {
         variance += (v - mean) * (v - mean);
     }
-    variance /= sonarReadings.size();
+    variance /= sonarReadings.size() - 1;
     ROS_INFO("variance %lf", variance);
     return variance;
 }
 
 void definePIDSrvInitialValues(assignment1::pid_algorithm &pidAlgorithmSrv) {
     // Extracted method to help with main readability
-    pidAlgorithmSrv.request.K_p = 1;
-    pidAlgorithmSrv.request.K_i = 1;
-    pidAlgorithmSrv.request.K_d = 1;
+    pidAlgorithmSrv.request.K_p = 0.22/100;
+    pidAlgorithmSrv.request.K_i = 0;
+    pidAlgorithmSrv.request.K_d = 0;
     pidAlgorithmSrv.request.lastError = 0;
     pidAlgorithmSrv.request.totalFValue = 0;
     pidAlgorithmSrv.request.T = 1000 / 100; // ms in a second / loop rate
