@@ -181,9 +181,11 @@ int main(int argc, char **argv) {
                     continue;
                 }
                 lastPose = ModelStateSrv.response.pose;
+                // Sonars makes the units into centimetres instead so follow
+                // suite 
                 kalmanFilterSrv.request.y_i_estimate =
                         kalmanFilterSrv.response.y_i - 
-                        euclideanDistance(lastPose, ModelStateSrv.response.pose);
+                        (euclideanDistance(lastPose, ModelStateSrv.response.pose) * 100);
             }
 
             kalmanFilterSrv.request.z_i = sonarReadingSrv.response.readings.distance1;
