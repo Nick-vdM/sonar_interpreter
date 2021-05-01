@@ -12,7 +12,7 @@
 
 // Maximum is 1.6 radians / second -> half a radian
 // One degree = 180/M_PI
-const double TURNRATE = M_PI / 180 * 10;
+const double TURNRATE = M_PI / 180 * 50;
 #ifdef NOISY_SONAR
 uint32_t varianceSamples = 1000;
 #endif
@@ -65,12 +65,6 @@ double calculateVariance(std::vector <uint16_t> &sonarReadings) {
 
 void definePIDSrvInitialValues(assignment1::pid_algorithm &pidAlgorithmSrv) {
     // Extracted method to help with main readability
-    pidAlgorithmSrv.request.K_p = 0.22/100;
-    pidAlgorithmSrv.request.K_i = 0;
-    pidAlgorithmSrv.request.K_d = 0;
-    pidAlgorithmSrv.request.lastError = 0;
-    pidAlgorithmSrv.request.totalFValue = 0;
-    pidAlgorithmSrv.request.T = 1000 / 100; // ms in a second / loop rate
 }
 
 // Reading this would be incredibly painful because a lot of sections cannot
@@ -111,8 +105,15 @@ int main(int argc, char **argv) {
             nodeHandle.serviceClient<assignment1::pid_algorithm>(
                     "pid_algorithm"
             );
-    definePIDSrvInitialValues(pidAlgorithmSrv);
+    pidAlgorithmSrv.request.K_p = 22.0/100.0;
+    ROS_INFO("Initial K_p is %lf", pidAlgorithmSrv.request.K_p);
+    pidAlgorithmSrv.request.K_i = 0;
+    pidAlgorithmSrv.request.K_d = 0;
+    pidAlgorithmSrv.request.lastError = 0;
+    pidAlgorithmSrv.request.totalFValue = 0;
+    pidAlgorithmSrv.request.T = 1000 / 100; // ms in a second / loop rate
     bool firstPid = true;
+    bool turning = false;
 
     while (ros::ok()) {
         ros::spinOnce();
@@ -127,8 +128,16 @@ int main(int argc, char **argv) {
         if (sonarReadingSrv.response.readings.distance1 == UINT16_MAX) {
             // We need to turn -> extract it as a function for cleanliness
             defineTurn(movement, sonarReadingSrv);
+            turning = true;
         } else {
             // We can start driving forwards
+            if(turning){
+                // quickly publish a zero movement to stop moving
+                turning = false;
+                driver.publish(movement);
+                rate.sleep();
+                continue;
+            }
 #ifdef NOISY_SONAR
             // just go ahead and generate the variance now
             // Can't extract method because we use spin
@@ -155,7 +164,8 @@ int main(int argc, char **argv) {
                 // P_i_estimate = 0.
                 kalmanFilterSrv.request.z_i = 0;
                 kalmanFilterSrv.request.y_i_estimate = 0;
-                kalmanFilterSrv.request.P_i_estimate = 0;
+                kalmanFilterSrv.request.P_i_estimate = 
+                    kalmanFilterSrv.request.R_i;
 
                 if(!modelState.call(ModelStateSrv)){
                     ROS_ERROR("Failed to use gazebo/get_model_state: is it running?");
@@ -172,10 +182,8 @@ int main(int argc, char **argv) {
                 }
                 lastPose = ModelStateSrv.response.pose;
                 kalmanFilterSrv.request.y_i_estimate =
+                        kalmanFilterSrv.response.y_i - 
                         euclideanDistance(lastPose, ModelStateSrv.response.pose);
-                // Also make P_i_estimate = P_i for the next run
-                kalmanFilterSrv.request.P_i_estimate = 
-                    kalmanFilterSrv.response.P_i;
             }
 
             kalmanFilterSrv.request.z_i = sonarReadingSrv.response.readings.distance1;
@@ -184,12 +192,18 @@ int main(int argc, char **argv) {
                 rate.sleep();
                 continue;
             }
+            // Also make P_i_estimate = P_i for the next run
+            ROS_INFO("P_i_estimate (before) = %lf, P_i = %lf", kalmanFilterSrv.request.P_i_estimate, kalmanFilterSrv.response.P_i);
+            kalmanFilterSrv.request.P_i_estimate = 
+                kalmanFilterSrv.response.P_i;
+            ROS_INFO("P_i_estimate (after) = %lf", kalmanFilterSrv.request.P_i_estimate);
 
             pidAlgorithmSrv.request.error = kalmanFilterSrv.response.y_i;
 #else
-            pidAlgorithmSrv.request.error = sonarReadingSrv.response.readings.distance1;
+            pidAlgorithmSrv.request.error = (double)sonarReadingSrv.response.readings.distance1;
 #endif
-            ROS_INFO("Read error as %u", (unsigned int) pidAlgorithmSrv.request.error);
+            ROS_INFO("Read error as %lf", pidAlgorithmSrv.request.error);
+            ROS_INFO("Calling PID_service with K_p = %lf", pidAlgorithmSrv.request.K_p);
             if (!PID_service.call(pidAlgorithmSrv)) {
                 ROS_ERROR("Failed to use assignment1/sonar_wrapper: is it running?");
                 rate.sleep();

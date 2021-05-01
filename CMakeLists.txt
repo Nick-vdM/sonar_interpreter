@@ -57,9 +57,9 @@ add_executable(assignment1_kalmanFilter src/kalmanFilter.cpp)
 target_link_libraries(assignment1_kalmanFilter ${catkin_LIBRARIES})
 add_dependencies(assignment1_kalmanFilter assignment1_generate_messages_cpp)
 
-add_executable(assignment1_pidAlgorithm.cpp src/pidAlgorithm.cpp)
-target_link_libraries(assignment1_pidAlgorithm.cpp ${catkin_LIBRARIES})
-add_dependencies(assignment1_pidAlgorithm.cpp assignment1_generate_messages_cpp)
+add_executable(assignment1_pidAlgorithm src/pidAlgorithm.cpp)
+target_link_libraries(assignment1_pidAlgorithm ${catkin_LIBRARIES})
+add_dependencies(assignment1_pidAlgorithm assignment1_generate_messages_cpp)
 
 add_executable(assignment1_sonarWrapper src/sonarWrapper.cpp)
 target_link_libraries(assignment1_sonarWrapper ${catkin_LIBRARIES})

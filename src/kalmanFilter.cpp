@@ -46,9 +46,9 @@ bool kalmanFilter(
         double K_i = req.P_i_estimate / (req.P_i_estimate + req.R_i);
         res.y_i = req.y_i_estimate + K_i*(req.z_i - req.y_i_estimate);
         ROS_INFO("P_i_estimate (before) %lf", req.P_i_estimate);
-        req.P_i_estimate = (1 - K_i) * req.P_i_estimate;
+        res.P_i = (1 - K_i) * req.P_i_estimate;
         ROS_INFO("K_i %lf R_I %lf z_i %u y_i_estimate %lf P_i_estimate(after) %lf",
-                K_i, req.R_i, (unsigned int)req.z_i, req.y_i_estimate, req.P_i_estimate);
+                K_i, req.R_i, req.z_i, req.y_i_estimate, res.P_i);
         
         ROS_INFO("Returning y_i as %lf", res.y_i);
         return true;

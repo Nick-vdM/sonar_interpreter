@@ -35,8 +35,9 @@ bool pidAlgorithm(
     res.y = std::min(res.y, 0.22);
     res.y = std::max(res.y, 0.0);
 
-    ROS_INFO("lastError: %u totalFValue %lf", 
-            (unsigned int) res.lastError, res.totalFValue);
+    ROS_INFO("Error %lf", req.error);
+    ROS_INFO("lastError: %lf totalFValue %lf", 
+            req.lastError, res.totalFValue);
     ROS_INFO("K_p: %lf K_i %lf K_d %lf", req.K_p, req.K_i, req.K_d);
     ROS_INFO("P: %lf, I:, %lf, D: %lf", P,I, D);
     ROS_INFO("Returning y as %lf", res.y);
