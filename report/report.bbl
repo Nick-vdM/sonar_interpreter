@@ -1,0 +1,15 @@
+\begin{thebibliography}{}
+
+\bibitem[M., 2000]{pidControl}
+M., A. (2000).
+\newblock Pid control.
+\newblock
+  \url{https://www.eolss.net/ebooks/Sample%20Chapters/C18/E6-43-03-03.pdf}.
+
+\bibitem[Siegward et~al., 2011]{kalman}
+Siegward, Roland, Nourbakhshs, I.~R., and Scaramuzza, D. (2011).
+\newblock Introduction to autonomous mobile robots second edition.
+\newblock
+  \url{https://learn-ap-southeast-2-prod-fleet01-xythos.content.blackboardcdn.com/5bb70f08ac35e/8023721?X-Blackboard-Expiration=1619870400000&X-Blackboard-Signature=55OomC3C9LgQebBieXZLrHODLw7EyXD7bBOn8vVfmOU%3D&X-Blackboard-Client-Id=101056&response-cache-control=private%2C%20max-age%3D21600&response-content-disposition=inline%3B%20filename%2A%3DUTF-8%27%27Introduction%2520to%2520Autonomous%2520Mobile%2520Robots_2nd.pdf&response-content-type=application%2Fpdf&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20210501T060000Z&X-Amz-SignedHeaders=host&X-Amz-Expires=21600&X-Amz-Credential=AKIAYDKQORRYZBCCQFY5%2F20210501%2Fap-southeast-2%2Fs3%2Faws4_request&X-Amz-Signature=a86bfb6cd33b718b655f848704fa7b055a939b711e9b60af19b85768bdc61ec5}.
+
+\end{thebibliography}
