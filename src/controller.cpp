@@ -12,50 +12,51 @@
 
 // Maximum is 1.6 radians / second -> half a radian
 // One degree = 180/M_PI
-const double TURNRATE = M_PI/180 * 10; 
+const double TURNRATE = M_PI / 180 * 10;
 #ifdef NOISY_SONAR
 uint32_t varianceSamples = 1000;
 #endif
 
-double euclideanDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p2){
+double euclideanDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p2) {
     ROS_INFO("Calculating euclid;model state: p1x %lf p1y %lf p1z %lf p2x %lf p2y %lf p3z %lf",
-        p1.position.x, p1.position.y, p1.position.z, 
-        p2.position.x, p2.position.y, p2.position.z);
+             p1.position.x, p1.position.y, p1.position.z,
+             p2.position.x, p2.position.y, p2.position.z);
     return sqrt(
-        pow(p1.position.x - p2.position.x, 2) + 
-        pow(p1.position.x - p2.position.y, 2) + 
-        pow(p1.position.z - p2.position.z, 2)
+            pow(p1.position.x - p2.position.x, 2) +
+            pow(p1.position.x - p2.position.y, 2) +
+            pow(p1.position.z - p2.position.z, 2)
     );
 }
 
-void defineTurn(geometry_msgs::Twist & defineTurnOf, 
-                    assignment1::getSonarReadings sonarReadingSrv){
+void defineTurn(geometry_msgs::Twist &defineTurnOf,
+                assignment1::getSonarReadings sonarReadingSrv) {
     // We need to rotate
-    if(sonarReadingSrv.response.readings.distance0 == UINT16_MAX || 
-        sonarReadingSrv.response.readings.distance2 == UINT16_MAX){
+    if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX ||
+        sonarReadingSrv.response.readings.distance2 == UINT16_MAX) {
         // Unable to see where the robot is so just turn right
         defineTurnOf.angular.z = TURNRATE;
-    } else if(sonarReadingSrv.response.readings.distance0 == UINT16_MAX){
+    } else if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX) {
         // It must be torwards distance 2 so we need to turn positive
         defineTurnOf.angular.z = TURNRATE;
-    } else{
+    } else {
         // It must be towards distance 0 so we need to turn negative
         defineTurnOf.angular.z = TURNRATE * -1;
     }
 }
 
-double calculateVariance(std::vector<uint16_t> & sonarReadings){
+double calculateVariance(std::vector <uint16_t> &sonarReadings) {
     ROS_INFO("Number of values collected %zu", sonarReadings.size());
     double mean{0.0};
-    for(auto & v : sonarReadings){
-        ROS_INFO("%" PRIu16, v);
+    for (auto &v : sonarReadings) {
+        ROS_INFO("%"
+        PRIu16, v);
         mean += v;
     }
     mean /= sonarReadings.size();
     ROS_INFO("%lf", mean);
 
     double variance{0};
-    for(auto & v : sonarReadings){
+    for (auto &v : sonarReadings) {
         variance += (v - mean) * (v - mean);
     }
     variance /= sonarReadings.size();
@@ -63,20 +64,31 @@ double calculateVariance(std::vector<uint16_t> & sonarReadings){
     return variance;
 }
 
-// Thanks to how ROS was made, a massive chunk of this code has to be in main.
-// Sorry.
-int main(int argc, char **argv){
+void definePIDSrvInitialValues(assignment1::pid_algorithm &pidAlgorithmSrv) {
+    // Extracted method to help with main readability
+    pidAlgorithmSrv.request.K_p = 1;
+    pidAlgorithmSrv.request.K_i = 1;
+    pidAlgorithmSrv.request.K_d = 1;
+    pidAlgorithmSrv.request.lastError = 0;
+    pidAlgorithmSrv.request.totalFValue = 0;
+    pidAlgorithmSrv.request.T = 1000 / 100; // ms in a second / loop rate
+}
+
+// Reading this would be incredibly painful because a lot of sections cannot
+// be extracted thanks to how spin() must be in main. As a workaround,
+// check the psuedo code in the report first before trying to understand this.
+int main(int argc, char **argv) {
     ros::init(argc, argv, "controller");
     ros::NodeHandle nodeHandle;
     ros::Rate rate(100);
 
     assignment1::getSonarReadings sonarReadingSrv;
-    ros::ServiceClient sonarReader = 
-        nodeHandle.serviceClient<assignment1::getSonarReadings>(
-            "sonar_wrapper"
-    );
+    ros::ServiceClient sonarReader =
+            nodeHandle.serviceClient<assignment1::getSonarReadings>(
+                    "sonar_wrapper"
+            );
     ros::Publisher driver =
-        nodeHandle.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+            nodeHandle.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 
 #ifdef NOISY_SONAR
     assignment1::kalman_filter kalmanFilterSrv;
@@ -94,42 +106,39 @@ int main(int argc, char **argv){
         nodeHandle.serviceClient<gazebo_msgs::GetModelState>(
             "/gazebo/get_model_state"
     );
-    
 #endif
     assignment1::pid_algorithm pidAlgorithmSrv;
-    ros::ServiceClient PID_service = 
-        nodeHandle.serviceClient<assignment1::pid_algorithm>(
-            "pid_algorithm"
-    );
-    pidAlgorithmSrv.request.K_p = 1;
-    pidAlgorithmSrv.request.K_i = 1;
-    pidAlgorithmSrv.request.K_d = 1;
-    pidAlgorithmSrv.request.lastError = 0;
-    pidAlgorithmSrv.request.totalFValue = 0;
-    pidAlgorithmSrv.request.T = 1000/100; // ms in a second / loop rate
-    bool firstPid = true; 
+    ros::ServiceClient PID_service =
+            nodeHandle.serviceClient<assignment1::pid_algorithm>(
+                    "pid_algorithm"
+            );
+    definePIDSrvInitialValues(pidAlgorithmSrv);
+    bool firstPid = true;
 
-    while(ros::ok()){
+    while (ros::ok()) {
         ros::spinOnce();
-        if(!sonarReader.call(sonarReadingSrv)){
+        // Would love to extract all of these node client calls so they do not
+        // take up five lines each, but the continue function is in them...
+        if (!sonarReader.call(sonarReadingSrv)) {
             ROS_ERROR("Failed to use assignment1/sonar_wrapper: is it running?");
             rate.sleep();
             continue;
         }
         geometry_msgs::Twist movement;
-        if(sonarReadingSrv.response.readings.distance1 == UINT16_MAX){
+        if (sonarReadingSrv.response.readings.distance1 == UINT16_MAX) {
             // We need to turn -> extract it as a function for cleanliness
             defineTurn(movement, sonarReadingSrv);
-        } else{
+        } else {
             // We can start driving forwards
 #ifdef NOISY_SONAR
             // just go ahead and generate the variance now
+            // Can't extract method because we use spin
             if(isnan(kalmanFilterSrv.request.R_i)){
                 std::vector<uint16_t> sonarSamples;
                 while(ros::ok() && varianceSamples > 0){
                     varianceSamples--;
                     if(varianceSamples % 100 == 0){
-                        ROS_INFO("Collecting samples... %" PRIu32, varianceSamples);
+                        ROS_INFO("Collecting samples for variance calculation... %" PRIu32 " left", varianceSamples);
                     }
                     ros::spinOnce();
                     if(!sonarReader.call(sonarReadingSrv)){
@@ -141,13 +150,13 @@ int main(int argc, char **argv){
                     rate.sleep();
                 }
                 kalmanFilterSrv.request.R_i = calculateVariance(sonarSamples);
-                // R_0 = P_0
-                kalmanFilterSrv.request.P_i_estimate = kalmanFilterSrv.request.R_i;
-                ROS_INFO("R_i is %lf", kalmanFilterSrv.request.R_i);
                 // since this is the first run z_i, y_i_estimate and
-                // P_i_estimate should all be 0
+                // P_i_estimate = 0. As a side effect this causes
+                // P_0 = R_0 as P_i=(1-K)*P_i_estimate and K = 0 when
+                // P_i_estimate = 0.
                 kalmanFilterSrv.request.z_i = 0;
                 kalmanFilterSrv.request.y_i_estimate = 0;
+                kalmanFilterSrv.request.P_i_estimate = 0;
 
                 if(!modelState.call(ModelStateSrv)){
                     ROS_ERROR("Failed to use gazebo/get_model_state: is it running?");
@@ -156,15 +165,16 @@ int main(int argc, char **argv){
                 }
                 lastPose = ModelStateSrv.response.pose;
             } else {
-                // actually estimate z_i based on y_i using model states
+                // Variance has been calculated, do the actual filter instead
                 if(!modelState.call(ModelStateSrv)){
                     ROS_ERROR("Failed to use gazebo/get_model_state: is it running?");
                     rate.sleep();
                     continue;
                 }
                 lastPose = ModelStateSrv.response.pose;
-                kalmanFilterSrv.request.y_i_estimate = euclideanDistance(lastPose, ModelStateSrv.response.pose);
-                // Also make P_i_estimate = P_i
+                kalmanFilterSrv.request.y_i_estimate =
+                        euclideanDistance(lastPose, ModelStateSrv.response.pose);
+                // Also make P_i_estimate = P_i for the next run
                 kalmanFilterSrv.request.P_i_estimate = 
                     kalmanFilterSrv.response.P_i;
             }
@@ -180,22 +190,23 @@ int main(int argc, char **argv){
 #else
             pidAlgorithmSrv.request.error = sonarReadingSrv.response.readings.distance1;
 #endif
-            ROS_INFO("Read error as %u", (unsigned int)pidAlgorithmSrv.request.error);
-            if(!PID_service.call(pidAlgorithmSrv)){
+            ROS_INFO("Read error as %u", (unsigned int) pidAlgorithmSrv.request.error);
+            if (!PID_service.call(pidAlgorithmSrv)) {
                 ROS_ERROR("Failed to use assignment1/sonar_wrapper: is it running?");
                 rate.sleep();
                 continue;
             }
             movement.linear.x = pidAlgorithmSrv.response.y;
-            pidAlgorithmSrv.request.lastError = 
-                pidAlgorithm.request.error;
-            pidAlgorithmSrv.request.totalFValue = 
-                pidAlgorithm.response.totalFValue;
+            // Reset PID's requests based on the responses for the next run
+            pidAlgorithmSrv.request.lastError =
+                    pidAlgorithmSrv.request.error;
+            pidAlgorithmSrv.request.totalFValue =
+                    pidAlgorithmSrv.response.totalFValue;
         }
 
         driver.publish(movement);
         ROS_INFO("Published linear x: %lf angular z: %lf",
-                    movement.linear.x, movement.angular.z);
+                 movement.linear.x, movement.angular.z);
         rate.sleep();
     }
 

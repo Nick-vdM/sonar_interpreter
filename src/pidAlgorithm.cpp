@@ -1,6 +1,5 @@
 /*
  * Written by Nick van der Merwe - s5151332
- * 
  */
 #include "ros/ros.h"
 #include "assignment1_setup/Sonars.h"
@@ -8,8 +7,6 @@
 #include "geometry_msgs/Twist.h"
 #include <cmath>
 #include <algorithm>
-
-
 
 /*
 * We want to calculate the PID. To increase readability we 

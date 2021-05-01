@@ -1,3 +1,6 @@
+/*
+ * By Nick van der Merwe - s5151332
+ */
 #include <limits>
 #include <gazebo_msgs/ModelStates.h>
 #include "ros/ros.h"
