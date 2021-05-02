@@ -23,8 +23,7 @@ double euclideanDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p2) {
              p2.position.x, p2.position.y, p2.position.z);
     return sqrt(
             pow(p1.position.x - p2.position.x, 2) +
-            pow(p1.position.x - p2.position.y, 2) +
-            pow(p1.position.z - p2.position.z, 2)
+            pow(p1.position.y - p2.position.y, 2)
     );
 }
 
@@ -180,12 +179,14 @@ int main(int argc, char **argv) {
                     rate.sleep();
                     continue;
                 }
-                lastPose = ModelStateSrv.response.pose;
                 // Sonars makes the units into centimetres instead so follow
                 // suite 
+                double && euclidean = euclideanDistance(lastPose, ModelStateSrv.response.pose) * 100;
+                ROS_INFO("Euclidean distance is %lf", euclidean);
                 kalmanFilterSrv.request.y_i_estimate =
-                        kalmanFilterSrv.response.y_i - 
-                        (euclideanDistance(lastPose, ModelStateSrv.response.pose) * 100);
+                        kalmanFilterSrv.response.y_i - euclidean;
+
+                lastPose = ModelStateSrv.response.pose;
             }
 
             kalmanFilterSrv.request.z_i = sonarReadingSrv.response.readings.distance1;
