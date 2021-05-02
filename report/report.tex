@@ -28,12 +28,13 @@
 \section{Introduction}
 In this piece a controller is defined for a robot using a proportional integral
 derivative controller. This is split into two tasks, defining the PID algorithm
-and the Kalman filter. However, the architecture of the solution will contain
-four parts: the sonar wrapper, the PID service, the kalman filter service and
-the controller. Essentially, the sonar wrapper will turn the sonar topic into a
-service so that the controller does not subscribe to it. The PID and the Kalman
-filter will be purely functions without any storage so that they can be reused
-in the future. Lastly, the controller node will manage all of the data. \\
+and the Kalman filter in the assignment. However, the architecture of the
+solution will contain four parts: the sonar wrapper, the PID service, the Kalman
+filter service and the controller. Essentially, the sonar wrapper will turn the
+sonar topic into a service so that the controller does not subscribe to it. The
+PID and the Kalman filter will be purely functions without any storage so that
+they can be reused in the future. Lastly, the controller node will manage all of
+the data. \\ 
 \tab This report is organised based on the content in the nodes. Each section
 will introduce the necessary theory and explain how that is converted into code.
 With that in mind, Section \ref{sonarSection} contains the sonar wrapper,
@@ -274,11 +275,12 @@ K_p = 0.22/100$.
     \label{100units}
 \end{figure}
 \\
-\tab One issue to consider is that typically the error in an equation is not just
-distance, which is especially impactful to the integral term. Usually when the
-error hits zero, the integral value is set as a constant otherwise it would
-continue to rise as the controller is running \cite{kalman}. However, this only
-happens when the robot actually reaches the bowl which would be the end of the
+\tab One issue to consider is that typically the error in PID is not just
+distance (i.e. its the difference between the goal speed and current speed),
+which is especially impactful to the integral term. Usually when the 
+error hits zero, the integral value is set as a constant - otherwise it would
+continue to rise as the controller is running \cite{kalman}. In this case it only
+occurs when the robot actually reaches the bowl - which would be the end of the
 problem. In the case that the robot is as far away as its sonar readers allow
 (around 60,000), it would likely mean that it will just run at maximum speed all
 the way to the bowl. This results in three options: 1) Set $K_i$ to close to 0,
@@ -289,26 +291,41 @@ changing. \\
 in direct conflict with the goal of slowing down when close as it renders it
 impossible in some situations, and picking an arbitrary point where the integral
 stops growing would only cause the robot to have a minimum constant speed after
-a certain point.
-\\
-\tab As the derivative term allows the robot to continue going a certain speed
+a certain point. While $K_i$ could be set close to zero such that it has a
+'conceptual' effect, it's easier to just set it to zero as it would affect the
+speed in the same way in this environment.
+\\ \\
+As the derivative term allows the robot to continue going a certain speed
 or slow down less than usual, it could be useful in the Kalman filter. This is
 because occasionally the error is filtered to be a negative value which in that
-case the P term completely stops, and far too early. Furthermore, even with just
-the P term on its own in a non-noisy sonar it starts going abysmally slow as it
-approaches it. As a solution, $K_d$ is defined such that the robot can only lose
-$80\%$ of its speed every second. To do this all that must be considered is the
-conditions - the euclidean distance is measured every 10ms (100 times a second)
-in centimetres which is then published in metres (100 times less). These two
-cancel out, and to make it impossible to slow more than $80\%$ a second we can
-add $20\%$ of its speed at a given second, setting $K_d=0.2$.
+case the P term completely stops, and often far too early. Furthermore, even
+with just the P term on its own in a non-noisy sonar it starts going abysmally
+slow as it approaches it. As a solution, $K_d$ is defined such that the robot
+an only lose $80\%$ of its speed every second. To do this, the meaning of what
+the D term should be understood fully. It takes in the current distance,
+subtracts the last distance and divides by T. The subtraction operation, in
+theory, should always lead to a negative number as we are approaching the goal
+and dividing by T (0.01 seconds) says what the velocity would be for a second -
+as a negative. From this all that must be done to make sure 20\% of the previous
+velocity is added,$K_d$ should equal $-0.2$ as to cancel the negative and
+represent its velocity every second.
 \\
-\tab To tie it together, the integral is in direct conflict to
-the goal of getting there as fast as possible safely, and the only thing
-remaining is the proportional term. Ideally, the robot simply runs at maximum
-speed until a certain point which it starts slowing down to approach the bowl.
-To decide on this point the robot was place reasonably close to the bowl and the
-distance was measured as in figure \ref{100units}.
+\tab In reality though, due to the factor that the sonar readings are integers
+this does not function as intended. The maximum speed is 22 centimetres per
+second, and its reporting that 100 times every second. In other words, every
+four (or so) readings the difference would be 1cm, and not every reading has a
+difference of 0.22. As a result, the D term simply adds four times more than the
+intended value every four iterations. Since this is a sonar based issue, there
+is not much of a work around other than turning the sonar reading into a
+float64, ignoring the issue or setting $K_d$ to zero. Out of these, the issue was
+chosen to be ignored as in the Kalman filter this is not what occurs: the
+readings are floats.
+\\ \\
+To tie it together, it was decided that $K_p=0.22/100$, $K_i=0$, $K_d=-0.2$.
+$K_p$ makes the robot slow down as it approaches and $K_d$ prevents the robot
+from slowing down too abruptly. The issue with $K_i$ is that it makes the robot
+either stay at a certain speed, or stay at maximum speed depending on how its
+implemented.  
 \subsection{Calculating Variance}
 To do this is not any different from usual:
 \begin{equation}
@@ -331,31 +348,36 @@ the assignment and reduce reusability in the case that the sonar reader's
 distribution changes. Furthermore, this can be used as justification for why the
 variance is calculated every run: to improve reusability.
 \subsection{Random turns due to noise}
-Due to the sonars being capable of randomly shooting to uint16's max, it is completely
-possible for the robot to accidentally shift out of sight of the bowl. To
-counteract this, it was implemented that the robot should read that it lost
-sight of the bowl five consecutive times before it turns. While technically
-possible, the chances of this occuring is low enough that it does not happen.
+Due to the sonars being capable of randomly shooting to uint16's max (even if
+the chance is low), it is possible for the robot to accidentally shift out of
+sight of the bowl if one comes through. To counteract this, it was implemented
+that the robot should read that it lost sight of the bowl five consecutive times
+before it turns. While technically possible, the chances of this occurring is low
+enough that it does not happen. 
+\newpage
 \subsection{Structure}
 A core factor that makes implementing this difficult is that extracting functions
 from main in ROS is often prohibited due to a couple of methods only being
 permitted to be called inside main. So for easier understanding, figure
-\ref{controllerPseudo} was made to grasp the implementation better.
+\ref{controllerPseudo} was made to grasp the implementation better. However, it
+should only be used as a guide to the general structure - some extra things were
+added in the code that was detailed in the justifications, but not the pseudo-code.
 \begin{figure}[ht]
     \begin{subfigure}{.5\textwidth}
         \centering
-        \includegraphics[scale=0.25]{img/pseudocode_1.png}
+        \includegraphics[scale=0.22]{img/pseudocode_1.png}
     \end{subfigure}
     \begin{subfigure}{.5\textwidth}
         \centering
-        \includegraphics[scale=0.33]{img/pseudocode_2.png}
+        \includegraphics[scale=0.30]{img/pseudocode_2.png}
     \end{subfigure}
+    \caption{Pseudocode for better understanding of main code}
+    \label{controllerPseudo}
 \end{figure}
-\newpage
 \subsection{Implementation}
 Following the pseudocode, the controller was implemented as visible in figure
-\ref{controllerPseudo}. Note that the turn rate was set at ten degrees.
-\begin{figure}[ht]
+\ref{controllerPseudo}. 
+\begin{figure*}[ht]
     \begin{subfigure}{.5\textwidth}
         \centering
         \includegraphics[scale=0.24]{img/controller1.png}
@@ -364,8 +386,8 @@ Following the pseudocode, the controller was implemented as visible in figure
         \centering
         \includegraphics[scale=0.24]{img/controller2.png}
     \end{subfigure}
-\end{figure}
-\begin{figure}[ht]
+\end{figure*}
+\begin{figure*}[ht]
     \begin{subfigure}{.5\textwidth}
         \centering
         \includegraphics[scale=0.24]{img/controller3.png}
@@ -374,12 +396,23 @@ Following the pseudocode, the controller was implemented as visible in figure
         \centering
         \includegraphics[scale=0.24]{img/controller4.png}
     \end{subfigure}
+\end{figure*}
+\newpage
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.24]{img/controller5.png}
     \caption{Implementation of the controller. Read as top left -> top right -> 
     bottom left -> bottom right}
-    \label{controllerPseudo}
+    \label{controllerImplement}
 \end{figure}
+\section{Compiling and making the same results}
+The package should be extracted into a catkin workspace package and catkin\_make
+should be used. To launch the non-noisy version, launch sonars (from
+assignment1\_setup) assignment1\_pidAlgorithm, assignment1\_sonarWrapper and 
+assignment1\_controller. To do the Kalman filter launch noisy\_sonars (from
+assignment1\_setup) assignment1\_pidAlgorithm, assignment1\_sonarWrapper,
+assignment1\_kalmanFilter, and assignment1\_kalman\_controller. 
 \newpage
-
 \bibliographystyle{apalike}
 \bibliography{biblio}
 

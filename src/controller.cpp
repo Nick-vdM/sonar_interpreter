@@ -103,10 +103,10 @@ int main(int argc, char **argv) {
     pidAlgorithmSrv.request.K_p = 0.22/100.0;
     ROS_INFO("Initial K_p is %lf", pidAlgorithmSrv.request.K_p);
     pidAlgorithmSrv.request.K_i = 0;
-    pidAlgorithmSrv.request.K_d = 0.2;
+    pidAlgorithmSrv.request.K_d = -0.2;
     pidAlgorithmSrv.request.lastError = 0;
     pidAlgorithmSrv.request.totalFValue = 0;
-    pidAlgorithmSrv.request.T = 1000 / 100; // ms in a second / loop rate
+    pidAlgorithmSrv.request.T = 10 / 1000; // convert 10ms to seconds
     bool firstPid = true;
     bool turning = false;
     // Quickly publish a zero movement twist in case the last program terminated

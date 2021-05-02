@@ -3,32 +3,35 @@
 // https://www.linkedin.com/in/nick-vd-merwe/
 // nick.jvdmerwe@gmail.com
 
-const double TURNRATE = M_PI / 180 * 10;
+const double TURNRATE = M_PI / 180 * 50;
+#ifdef NOISY_SONAR
+uint32_t varianceSamples = 1000;
+#endif
+
+double euclideanDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p2) {
+    ROS_INFO("Calculating euclid;model state: p1x %lf p1y %lf p1z %lf p2x %lf p2y %lf p3z %lf",
+             p1.position.x, p1.position.y, p1.position.z,
+             p2.position.x, p2.position.y, p2.position.z);
+    return sqrt(
+            pow(p1.position.x - p2.position.x, 2) +
+            pow(p1.position.y - p2.position.y, 2)
+    );
+}
 
 void defineTurn(geometry_msgs::Twist &defineTurnOf,
                 assignment1::getSonarReadings sonarReadingSrv) {
     // We need to rotate
-    if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX ||
+    if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX &&
         sonarReadingSrv.response.readings.distance2 == UINT16_MAX) {
         // Unable to see where the robot is so just turn right
-        defineTurnOf.angular.z = TURNRATE;
-    } else if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX) {
-        // It must be torwards distance 2 so we need to turn positive
-        defineTurnOf.angular.z = TURNRATE;
-    } else {
-        // It must be towards distance 0 so we need to turn negative
         defineTurnOf.angular.z = TURNRATE * -1;
+    } else if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX) {
+        // It must be torwards distance 2 so we need to turn negative
+        defineTurnOf.angular.z = TURNRATE * 1;
+    } else {
+        // It must be towards distanCe 0 so we need to turn positive
+        defineTurnOf.angular.z = TURNRATE;
     }
-}
-
-void definePIDSrvInitialValues(assignment1::pid_algorithm &pidAlgorithmSrv) {
-    // Extracted method to help with main readability
-    pidAlgorithmSrv.request.K_p = whatever is decided on;
-    pidAlgorithmSrv.request.K_i = whatever is decided on;
-    pidAlgorithmSrv.request.K_d = whatever is decided on;
-    pidAlgorithmSrv.request.lastError = 0;
-    pidAlgorithmSrv.request.totalFValue = 0;
-    pidAlgorithmSrv.request.T = 1000 / 100; // ms in a second / loop rate
 }
 
 // this point onwards is psuedo code
