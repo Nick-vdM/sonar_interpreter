@@ -141,6 +141,7 @@ int main(int argc, char **argv) {
                 // Enter turning mode
                 turning = true;
                 }
+            }
             defineTurn(movement, sonarReadingSrv);
             } else {
                 // We can start driving forwards
@@ -151,7 +152,6 @@ int main(int argc, char **argv) {
                     rate.sleep();
                     continue;
                 }
-            }
 #ifdef NOISY_SONAR
             // just go ahead and generate the variance now
             // Can't extract method because we use spin
