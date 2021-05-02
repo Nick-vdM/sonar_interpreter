@@ -33,13 +33,13 @@ void defineTurn(geometry_msgs::Twist &defineTurnOf,
     if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX ||
         sonarReadingSrv.response.readings.distance2 == UINT16_MAX) {
         // Unable to see where the robot is so just turn right
-        defineTurnOf.angular.z = TURNRATE;
-    } else if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX) {
-        // It must be torwards distance 2 so we need to turn positive
-        defineTurnOf.angular.z = TURNRATE;
-    } else {
-        // It must be towards distanCe 0 so we need to turn negative
         defineTurnOf.angular.z = TURNRATE * -1;
+    } else if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX) {
+        // It must be torwards distance 2 so we need to turn negative
+        defineTurnOf.angular.z = TURNRATE * 1;
+    } else {
+        // It must be towards distanCe 0 so we need to turn positive
+        defineTurnOf.angular.z = TURNRATE;
     }
 }
 
@@ -109,6 +109,10 @@ int main(int argc, char **argv) {
     pidAlgorithmSrv.request.T = 1000 / 100; // ms in a second / loop rate
     bool firstPid = true;
     bool turning = false;
+    // Quickly publish a zero movement twist in case the last program terminated
+    // with the robot moving
+    driver.publish(geometry_msgs::Twist{});
+    ros::spinOnce();
 
     driver.publish(geometry_msgs::Twist{});
     ros::spinOnce();
