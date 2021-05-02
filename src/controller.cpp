@@ -126,9 +126,27 @@ int main(int argc, char **argv) {
         }
         geometry_msgs::Twist movement;
         if (sonarReadingSrv.response.readings.distance1 == UINT16_MAX) {
-            // We need to turn -> extract it as a function for cleanliness
+            // It could be a dud, if we are not already turning check whether
+            // it happens another five times in a row
+            if(!turning){
+                // publish zero movement
+                driver.publish(movement);
+                for(int i = 0; i < 5; i++){
+                    // Test if we get the same reading five times
+                    rate.sleep();
+                    ros::spinOnce();
+                    if (!sonarReader.call(sonarReadingSrv)) {
+                        ROS_ERROR("Failed to use assignment1/sonar_wrapper: is it running?");
+                        rate.sleep();
+                        continue;
+                    }
+                    if(sonarReadingSrv.response.readings.distance1 != UINT16_MAX){
+                        continue;
+                    }
+                // Enter turning mode
+                turning = true;
+            }
             defineTurn(movement, sonarReadingSrv);
-            turning = true;
         } else {
             // We can start driving forwards
             if(turning){

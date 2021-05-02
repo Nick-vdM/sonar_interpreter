@@ -252,7 +252,7 @@ the task sheet visible in figure \ref{kalmanImplement}.
 \end{figure}
 \section{Controller Node}\label{controllerSection}
 \subsection{PID constants}
-As picking the PID terms is not an essential step and only needs to be
+As picking the PID terms is not an essential step and, only needs to be
 justified, we can use manual selection. To define our PID terms we must consider
 the goal of how we wish the robot to move. A reasonably logical approach would
 be to make the robot run at maximum speed until it comes close to the bowl and
@@ -261,37 +261,12 @@ with a real world goal, it's wanting to drive to a location as fast as possible
 yet be safe. In other words, when a car is parking it slows down so it can move
 more accurately.
 \\
-\tab One issue to consider is that typically the error in an equation is not just
-distance, which is especially impactful to the integral term. Usually when the
-error hits zero, the integral value is set as a constant otherwise it would
-continue to rise as the controller is running \cite{kalman}. However, this only
-happens when the robot actually reaches the bowl which would be the end of the
-problem. In the case that the robot is as far away as its sonar readers allow
-(around 60,000), it would likely mean that it will just run at maximum speed all
-the way to the bowl. This results in three options: 1) Set $K_i$ to 0, rendering
-the entire term useless 2) Let the robot just run at maximum speed when its far
-away 3) Decide on a point when the integral term should stop changing. \\
-\tab To be true to the goal, the best option here would be option 1. Option 2 is
-in direct conflict with the goal of slowing down when close as it renders it
-impossible in some situations, and picking an arbitrary point where the integral
-stops growing would only cause the robot to have a minimum constant speed after
-a certain point.
-\\
-\tab Another factor is the the D term also does the opposite of the goal of the
-robot. Using it we can either make the robot go faster when its already going
-fast, or do the opposite. If this term were to dominate the terms it would mean
-that once the robot has hit a certain speed it will stay at that speed unless
-slowed by an outside force. Another option is that it will go in the opposite
-direction of where it is going, causing it to move back and forth (derivative is
-positive, move negative, derivative is negative, move positive... etc). As we do
-not want either of these, the derivative term can be set to 0 as well.
-\\
-\tab To tie it together, the derivative and integral are in direct conflict to
-the goal of getting there as fast as possible safely, and the only thing
-remaining is the proportional term. Ideally, the robot simply runs at maximum
-speed until a certain point which it starts slowing down to approach the bowl.
-To decide on this point the robot was place reasonably close to the bowl and the
-distance was measured as in figure \ref{100units}.
+\tab The $K_p$ term does exactly this by changing its speed in respect to its
+distance from the target. As such we can pick a point that looks reasonably
+close (see figure \ref{100units}) and define that as the point it should start
+slowing. To work out the $K_p$ from this all that must be done is the maximum
+speed should be found when its at 100 units by doing $y(t)=K_pe(t) => 0.22 = K_p100 =>
+K_p = 0.22/100$. 
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.75]{img/100_units_away.png}
@@ -299,9 +274,41 @@ distance was measured as in figure \ref{100units}.
     \label{100units}
 \end{figure}
 \\
-\tab To work out our $K_p$ from this we just have to find what the speed should be
-when its at 100 units by doing $y(t)=K_pe(t) => 0.22 = K_p100 => K_p =
-0.22/100$. We can just set $K_p$ to this.
+\tab One issue to consider is that typically the error in an equation is not just
+distance, which is especially impactful to the integral term. Usually when the
+error hits zero, the integral value is set as a constant otherwise it would
+continue to rise as the controller is running \cite{kalman}. However, this only
+happens when the robot actually reaches the bowl which would be the end of the
+problem. In the case that the robot is as far away as its sonar readers allow
+(around 60,000), it would likely mean that it will just run at maximum speed all
+the way to the bowl. This results in three options: 1) Set $K_i$ to close to 0,
+rendering the entire term next to useless 2) Let the robot just run at maximum speed
+when its far away 3) Decide on a point when the integral term should stop
+changing. \\ 
+\tab To be true to the goal, the best option here would be option 1. Option 2 is
+in direct conflict with the goal of slowing down when close as it renders it
+impossible in some situations, and picking an arbitrary point where the integral
+stops growing would only cause the robot to have a minimum constant speed after
+a certain point.
+\\
+\tab As the derivative term allows the robot to continue going a certain speed
+or slow down less than usual, it could be useful in the Kalman filter. This is
+because occasionally the error is filtered to be a negative value which in that
+case the P term completely stops, and far too early. Furthermore, even with just
+the P term on its own in a non-noisy sonar it starts going abysmally slow as it
+approaches it. As a solution, $K_d$ is defined such that the robot can only lose
+$80\%$ of its speed every second. To do this all that must be considered is the
+conditions - the euclidean distance is measured every 10ms (100 times a second)
+in centimetres which is then published in metres (100 times less). These two
+cancel out, and to make it impossible to slow more than $80\%$ a second we can
+add $20\%$ of its speed at a given second, setting $K_d=0.2$.
+\\
+\tab To tie it together, the integral is in direct conflict to
+the goal of getting there as fast as possible safely, and the only thing
+remaining is the proportional term. Ideally, the robot simply runs at maximum
+speed until a certain point which it starts slowing down to approach the bowl.
+To decide on this point the robot was place reasonably close to the bowl and the
+distance was measured as in figure \ref{100units}.
 \subsection{Calculating Variance}
 To do this is not any different from usual:
 \begin{equation}
@@ -323,6 +330,12 @@ deviation is defined as $100$. Meaning, the variance is hard-coded to $100^2 =
 the assignment and reduce reusability in the case that the sonar reader's
 distribution changes. Furthermore, this can be used as justification for why the
 variance is calculated every run: to improve reusability.
+\subsection{Random turns due to noise}
+Due to the sonars being capable of randomly shooting to uint16's max, it is completely
+possible for the robot to accidentally shift out of sight of the bowl. To
+counteract this, it was implemented that the robot should read that it lost
+sight of the bowl five consecutive times before it turns. While technically
+possible, the chances of this occuring is low enough that it does not happen.
 \subsection{Structure}
 A core factor that makes implementing this difficult is that extracting functions
 from main in ROS is often prohibited due to a couple of methods only being
