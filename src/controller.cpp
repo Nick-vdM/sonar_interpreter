@@ -227,7 +227,7 @@ int main(int argc, char **argv) {
             ROS_INFO("Read error as %lf", pidAlgorithmSrv.request.error);
             ROS_INFO("Calling PID_service with K_p = %lf", pidAlgorithmSrv.request.K_p);
             if (!PID_service.call(pidAlgorithmSrv)) {
-                ROS_ERROR("Failed to use assignment1/sonar_wrapper: is it running?");
+                ROS_ERROR("Failed to use assignment1/pid_algorithm: is it running?");
                 rate.sleep();
                 continue;
             }
