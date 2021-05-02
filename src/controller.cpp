@@ -140,16 +140,17 @@ int main(int argc, char **argv) {
                     }
                 // Enter turning mode
                 turning = true;
-            }
+                }
             defineTurn(movement, sonarReadingSrv);
-        } else {
-            // We can start driving forwards
-            if(turning){
-                // quickly publish a zero movement to stop moving
-                turning = false;
-                driver.publish(movement);
-                rate.sleep();
-                continue;
+            } else {
+                // We can start driving forwards
+                if(turning){
+                    // quickly publish a zero movement to stop moving
+                    turning = false;
+                    driver.publish(movement);
+                    rate.sleep();
+                    continue;
+                }
             }
 #ifdef NOISY_SONAR
             // just go ahead and generate the variance now
