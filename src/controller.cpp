@@ -23,8 +23,7 @@ double euclideanDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p2) {
              p2.position.x, p2.position.y, p2.position.z);
     return sqrt(
             pow(p1.position.x - p2.position.x, 2) +
-            pow(p1.position.x - p2.position.y, 2) +
-            pow(p1.position.z - p2.position.z, 2)
+            pow(p1.position.y - p2.position.y, 2)
     );
 }
 
@@ -61,10 +60,6 @@ double calculateVariance(std::vector <uint16_t> &sonarReadings) {
     variance /= sonarReadings.size() - 1;
     ROS_INFO("variance %lf", variance);
     return variance;
-}
-
-void definePIDSrvInitialValues(assignment1::pid_algorithm &pidAlgorithmSrv) {
-    // Extracted method to help with main readability
 }
 
 // Reading this would be incredibly painful because a lot of sections cannot
@@ -105,10 +100,10 @@ int main(int argc, char **argv) {
             nodeHandle.serviceClient<assignment1::pid_algorithm>(
                     "pid_algorithm"
             );
-    pidAlgorithmSrv.request.K_p = 22.0/100.0;
+    pidAlgorithmSrv.request.K_p = 0.22/100.0;
     ROS_INFO("Initial K_p is %lf", pidAlgorithmSrv.request.K_p);
     pidAlgorithmSrv.request.K_i = 0;
-    pidAlgorithmSrv.request.K_d = 0;
+    pidAlgorithmSrv.request.K_d = 0.2;
     pidAlgorithmSrv.request.lastError = 0;
     pidAlgorithmSrv.request.totalFValue = 0;
     pidAlgorithmSrv.request.T = 1000 / 100; // ms in a second / loop rate
@@ -198,12 +193,14 @@ int main(int argc, char **argv) {
                     rate.sleep();
                     continue;
                 }
-                lastPose = ModelStateSrv.response.pose;
                 // Sonars makes the units into centimetres instead so follow
                 // suite 
+                double && euclidean = euclideanDistance(lastPose, ModelStateSrv.response.pose) * 100;
+                ROS_INFO("Euclidean distance is %lf", euclidean);
                 kalmanFilterSrv.request.y_i_estimate =
-                        kalmanFilterSrv.response.y_i - 
-                        (euclideanDistance(lastPose, ModelStateSrv.response.pose) * 100);
+                        kalmanFilterSrv.response.y_i - euclidean;
+
+                lastPose = ModelStateSrv.response.pose;
             }
 
             kalmanFilterSrv.request.z_i = sonarReadingSrv.response.readings.distance1;
