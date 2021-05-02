@@ -62,10 +62,6 @@ double calculateVariance(std::vector <uint16_t> &sonarReadings) {
     return variance;
 }
 
-void definePIDSrvInitialValues(assignment1::pid_algorithm &pidAlgorithmSrv) {
-    // Extracted method to help with main readability
-}
-
 // Reading this would be incredibly painful because a lot of sections cannot
 // be extracted thanks to how spin() must be in main. As a workaround,
 // check the psuedo code in the report first before trying to understand this.
@@ -104,10 +100,10 @@ int main(int argc, char **argv) {
             nodeHandle.serviceClient<assignment1::pid_algorithm>(
                     "pid_algorithm"
             );
-    pidAlgorithmSrv.request.K_p = 22.0/100.0;
+    pidAlgorithmSrv.request.K_p = 0.22/100.0;
     ROS_INFO("Initial K_p is %lf", pidAlgorithmSrv.request.K_p);
     pidAlgorithmSrv.request.K_i = 0;
-    pidAlgorithmSrv.request.K_d = 0;
+    pidAlgorithmSrv.request.K_d = 0.2;
     pidAlgorithmSrv.request.lastError = 0;
     pidAlgorithmSrv.request.totalFValue = 0;
     pidAlgorithmSrv.request.T = 1000 / 100; // ms in a second / loop rate
