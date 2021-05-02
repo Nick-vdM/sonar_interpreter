@@ -36,7 +36,7 @@ void defineTurn(geometry_msgs::Twist &defineTurnOf,
         defineTurnOf.angular.z = TURNRATE * -1;
     } else if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX) {
         // It must be torwards distance 2 so we need to turn negative
-        defineTurnOf.angular.z = TURNRATE * 1;
+        defineTurnOf.angular.z = TURNRATE * -1;
     } else {
         // It must be towards distanCe 0 so we need to turn positive
         defineTurnOf.angular.z = TURNRATE;
