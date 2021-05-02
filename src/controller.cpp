@@ -30,7 +30,7 @@ double euclideanDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p2) {
 void defineTurn(geometry_msgs::Twist &defineTurnOf,
                 assignment1::getSonarReadings sonarReadingSrv) {
     // We need to rotate
-    if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX ||
+    if (sonarReadingSrv.response.readings.distance0 == UINT16_MAX && 
         sonarReadingSrv.response.readings.distance2 == UINT16_MAX) {
         // Unable to see where the robot is so just turn right
         defineTurnOf.angular.z = TURNRATE * -1;
@@ -113,12 +113,9 @@ int main(int argc, char **argv) {
     // with the robot moving
     driver.publish(geometry_msgs::Twist{});
     ros::spinOnce();
-
-    driver.publish(geometry_msgs::Twist{});
-    ros::spinOnce();
+    rate.sleep();
 
     while (ros::ok()) {
-        ros::spinOnce();
         // Would love to extract all of these node client calls so they do not
         // take up five lines each, but the continue function is in them...
         if (!sonarReader.call(sonarReadingSrv)) {
@@ -245,6 +242,7 @@ int main(int argc, char **argv) {
         driver.publish(movement);
         ROS_INFO("Published linear x: %lf angular z: %lf",
                  movement.linear.x, movement.angular.z);
+        ros::spinOnce();
         rate.sleep();
     }
 
