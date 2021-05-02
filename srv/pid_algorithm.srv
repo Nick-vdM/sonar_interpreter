@@ -7,5 +7,4 @@ float64 K_d
 float64 T
 ---
 float64 y
-float64 lastError
 float64 totalFValue

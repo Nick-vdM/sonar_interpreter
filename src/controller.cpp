@@ -110,6 +110,9 @@ int main(int argc, char **argv) {
     bool firstPid = true;
     bool turning = false;
 
+    driver.publish(geometry_msgs::Twist{});
+    ros::spinOnce();
+
     while (ros::ok()) {
         ros::spinOnce();
         // Would love to extract all of these node client calls so they do not
