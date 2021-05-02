@@ -307,8 +307,8 @@ subtracts the last distance and divides by T. The subtraction operation, in
 theory, should always lead to a negative number as we are approaching the goal
 and dividing by T (0.01 seconds) says what the velocity would be for a second -
 as a negative. From this all that must be done to make sure 20\% of the previous
-velocity is added,$K_d$ should equal $-0.2$ as to cancel the negative and
-represent its velocity every second.
+velocity is added,$K_d$ should equal $-0.2/100$ as to cancel the negative and
+represent its velocity in metres (that is the divided by 100) every second.
 \\
 \tab In reality though, due to the factor that the sonar readings are integers
 this does not function as intended. The maximum speed is 22 centimetres per
@@ -405,7 +405,7 @@ Following the pseudocode, the controller was implemented as visible in figure
     bottom left -> bottom right}
     \label{controllerImplement}
 \end{figure}
-\section{Compiling and making the same results}
+\section{Compiling and replicating the results}
 The package should be extracted into a catkin workspace package and catkin\_make
 should be used. To launch the non-noisy version, launch sonars (from
 assignment1\_setup) assignment1\_pidAlgorithm, assignment1\_sonarWrapper and 
