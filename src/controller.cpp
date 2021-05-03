@@ -176,12 +176,13 @@ int main(int argc, char **argv) {
                     rate.sleep();
                 }
                 kalmanFilterSrv.request.R_i = calculateVariance(sonarSamples);
-                // since this is the first run z_i, y_i_estimate and
-                // P_i_estimate = 0. As a side effect this causes
-                // P_0 = R_0 as P_i=(1-K)*P_i_estimate and K = 0 when
-                // P_i_estimate = 0.
-                kalmanFilterSrv.request.z_i = 0;
-                kalmanFilterSrv.request.y_i_estimate = 0;
+                // We're effectively going to skip the first run by doing
+                // y_i_estimate = z_i estimate. We can just use the last
+                // read output from reading the samples though.
+                // y_0 = z_0
+                kalmanFilterSrv.request.z_i = sonarSamples[sonarSamples.size() - 1];
+                kalmanFilterSrv.request.y_i_estimate = 
+                    kalmanFilterSrv.request.z_i;
                 kalmanFilterSrv.request.P_i_estimate = 
                     kalmanFilterSrv.request.R_i;
 
