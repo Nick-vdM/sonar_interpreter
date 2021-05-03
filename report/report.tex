@@ -223,9 +223,17 @@ So essentially we found that
 \begin{equation*}
     \begin{split}
         K_0 & = \frac{1}{2} \\
-        & = \frac{1-K_i}{2-K_i}
+        K_{i+1} & = \frac{1-K_i}{2-K_i}
     \end{split}
 \end{equation*}
+\tab To elaborate, the reasons why this is happening is because $P_i$ does not
+change in the middle between calculations as the odometry has no variance. If it
+had a changing variance and $P_i$ were to suddenly spike, it would give less
+weight to the odometry and more weight to the sonar reader. Essentially it's
+throwing the sonars out the window by decreasing the value of the Kalman gain
+quickly. However, it still means that the entire variance step could be skipped
+as a result. 
+\\
 \tab With this being said, it will just be ignored. It's an interesting proof that
 makes variance useless, but taking it out will probably remove a section of the
 assignment that the assignment writer intended the student to do. It's
@@ -243,7 +251,7 @@ the task sheet visible in figure \ref{kalmanImplement}.
     \end{subfigure}
     \begin{subfigure}{.5\textwidth}
         \centering
-        \includegraphics[scale=0.35]{img/kalman_filter.png}
+        \includegraphics[scale=0.3]{img/kalman_filter.png}
         \caption{}
         \label{kalmanCode}
     \end{subfigure}
@@ -251,6 +259,8 @@ the task sheet visible in figure \ref{kalmanImplement}.
     in \ref{kalmanCode}}
     \label{kalmanImplement}
 \end{figure}
+
+\newpage
 \section{Controller Node}\label{controllerSection}
 \subsection{PID constants}
 As picking the PID terms is not an essential step and, only needs to be
