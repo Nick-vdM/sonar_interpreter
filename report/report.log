@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.4.18)  2 MAY 2021 22:21
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.4.18)  2 MAY 2021 23:04
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -453,11 +453,11 @@ File: img/controller1.png Graphic file (type png)
 <use img/controller1.png>
 Package pdftex.def Info: img/controller1.png  used on input line 383.
 (pdftex.def)             Requested size: 185.91837pt x 227.65515pt.
-<img/controller2.png, id=147, 776.9025pt x 947.03813pt>
+<img/controller2.png, id=147, 774.64406pt x 944.02687pt>
 File: img/controller2.png Graphic file (type png)
 <use img/controller2.png>
 Package pdftex.def Info: img/controller2.png  used on input line 387.
-(pdftex.def)             Requested size: 186.4604pt x 227.2938pt.
+(pdftex.def)             Requested size: 185.91837pt x 226.57108pt.
 
 Overfull \hbox (2.2222pt too wide) in paragraph at lines 381--389
 []$[]$ $[]$ 
@@ -532,7 +532,7 @@ Package atveryend Info: Empty hook `AfterLastShipout' on input line 420.
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 420.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 420.
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: F62345EE30D9D57B1000AA5EFD226539;662.
+(rerunfilecheck)             Checksum: 640F259B868B05FB673FE0F84A4F3375;662.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 420.
  ) 
 Here is how much of TeX's memory you used:
@@ -544,7 +544,7 @@ Here is how much of TeX's memory you used:
  59 hyphenation exceptions out of 8191
  48i,16n,46p,910b,475s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on "/e/OneDrive - Griffith University/3. Third Year/1. Trimester 1/3806ICT - RAAR/Assignments/sonar_interpreter/report/report.pdf" (10 pages, 845788 bytes).
+Output written on "/e/OneDrive - Griffith University/3. Third Year/1. Trimester 1/3806ICT - RAAR/Assignments/sonar_interpreter/report/report.pdf" (10 pages, 844165 bytes).
 PDF statistics:
  245 PDF objects out of 1000 (max. 8388607)
  189 compressed objects within 2 object streams
