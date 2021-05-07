@@ -335,7 +335,7 @@ To tie it together, it was decided that $K_p=0.22/100$, $K_i=0$, $K_d=-0.2$.
 $K_p$ makes the robot slow down as it approaches and $K_d$ prevents the robot
 from slowing down too abruptly. The issue with $K_i$ is that it makes the robot
 either stay at a certain speed, or stay at maximum speed depending on how its
-implemented.  
+implemented 
 \subsection{Calculating Variance}
 To do this is not any different from usual:
 \begin{equation}
@@ -371,7 +371,8 @@ from main in ROS is often prohibited due to a couple of methods only being
 permitted to be called inside main. So for easier understanding, figure
 \ref{controllerPseudo} was made to grasp the implementation better. However, it
 should only be used as a guide to the general structure - some extra things were
-added in the code that was detailed in the justifications, but not the pseudo-code.
+added in the code that was detailed in the justifications, but not the
+pseudo-code. For instance, $z_0^-=z_0$.
 \begin{figure}[ht]
     \begin{subfigure}{.5\textwidth}
         \centering
@@ -411,8 +412,9 @@ Following the pseudocode, the controller was implemented as visible in figure
 \begin{figure}[ht]
     \centering
     \includegraphics[scale=0.24]{img/controller5.png}
-    \caption{Implementation of the controller. Read as top left -> top right -> 
-    bottom left -> bottom right}
+    \caption{Implementation of the controller. Read as top left $\rightarrow$
+    top right $\rightarrow$  
+    bottom left $\rightarrow$ bottom right $\rightarrow$ very bottom.}
     \label{controllerImplement}
 \end{figure}
 \section{Compiling and replicating the results}
